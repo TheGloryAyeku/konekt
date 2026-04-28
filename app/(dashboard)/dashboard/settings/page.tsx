@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/supabase/require-user";
 import { createClient } from "@/lib/supabase/server";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { SettingsForm } from "./settings-form";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -29,25 +23,11 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Account</CardTitle>
-          <CardDescription>Username and display name.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
-          <div>
-            <span className="text-muted-foreground">Email:</span> {user.email}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Username:</span>{" "}
-            {profile?.username}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Display name:</span>{" "}
-            {profile?.display_name ?? "—"}
-          </div>
-        </CardContent>
-      </Card>
+      <SettingsForm
+        email={user.email ?? ""}
+        username={profile?.username ?? ""}
+        displayName={profile?.display_name ?? ""}
+      />
     </div>
   );
 }

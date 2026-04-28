@@ -221,6 +221,12 @@ const dummyAuth = {
       error: null,
     };
   },
+  async resetPasswordForEmail() {
+    return { data: {}, error: null };
+  },
+  async updateUser() {
+    return { data: { user: DUMMY_USER }, error: null };
+  },
   onAuthStateChange() {
     return {
       data: {

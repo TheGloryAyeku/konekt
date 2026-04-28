@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireUser } from "@/lib/supabase/require-user";
 import { createClient } from "@/lib/supabase/server";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { buttonVariants } from "@/components/ui/button";
+import { DomainManager } from "./domain-manager";
 
 export const metadata: Metadata = { title: "Custom domain" };
 
@@ -24,39 +20,44 @@ export default async function DomainPage() {
 
   const isPro = profile?.plan === "pro";
 
+  const { data: domains } = isPro
+    ? await supabase
+        .from("custom_domains")
+        .select("id, domain, verified, verification_token, created_at")
+        .eq("profile_id", user.id)
+        .order("created_at", { ascending: false })
+    : { data: [] };
+
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Custom domain</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Custom domain
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Point your own domain at your page via a CNAME.
+          Point your own domain at your page so the link in your bio matches
+          your brand.
         </p>
       </div>
 
       {!isPro ? (
         <Alert>
           <AlertTitle>Pro plan required</AlertTitle>
-          <AlertDescription>
-            Custom domains are available on the Pro plan. Upgrade from the
-            billing page to unlock it.
+          <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+            <span>
+              Custom domains are part of Pro. Upgrade to connect your own
+              domain.
+            </span>
+            <Link
+              href="/dashboard/billing"
+              className={buttonVariants({ size: "sm" })}
+            >
+              Upgrade to Pro
+            </Link>
           </AlertDescription>
         </Alert>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Connect a domain</CardTitle>
-            <CardDescription>
-              We&apos;ll provision the Cloudflare config once you verify the
-              CNAME.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {/* TODO: domain add form + verification status */}
-              Domain setup UI coming soon.
-            </p>
-          </CardContent>
-        </Card>
+        <DomainManager domains={domains ?? []} />
       )}
     </div>
   );

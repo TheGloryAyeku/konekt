@@ -5,17 +5,11 @@ type Props = {
   linkId: string;
   href: string;
   className?: string;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 };
 
-/**
- * Fires a click beacon, then lets the browser navigate normally.
- *
- * We intentionally use `navigator.sendBeacon` so the request survives the
- * imminent navigation. Falls back to a fire-and-forget fetch for browsers
- * without beacon support.
- */
-export function TrackedLink({ profileId, linkId, href, className, children }: Props) {
+export function TrackedLink({ profileId, linkId, href, className, style, children }: Props) {
   function onClick() {
     const payload = JSON.stringify({
       profile_id: profileId,
@@ -42,6 +36,7 @@ export function TrackedLink({ profileId, linkId, href, className, children }: Pr
       target="_blank"
       rel="noopener noreferrer"
       className={className}
+      style={style}
       onClick={onClick}
     >
       {children}

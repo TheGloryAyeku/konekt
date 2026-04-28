@@ -1,4 +1,5 @@
 import { NextResponse, after } from "next/server";
+import { z } from "zod";
 import {
   isLikelyBot,
   parseDevice,
@@ -7,23 +8,24 @@ import {
 } from "@/lib/analytics";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
-type Body = {
-  profile_id: string;
-  referrer: string | null;
-};
+const viewSchema = z.object({
+  profile_id: z.string().uuid(),
+  referrer: z.string().max(2048).nullable(),
+});
 
 export async function POST(request: Request) {
-  let body: Body;
+  let raw: unknown;
   try {
-    body = (await request.json()) as Body;
+    raw = await request.json();
   } catch {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  if (!body.profile_id) {
+  const parsed = viewSchema.safeParse(raw);
+  if (!parsed.success) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
-
+  const body = parsed.data;
   const userAgent = request.headers.get("user-agent");
 
   after(async () => {

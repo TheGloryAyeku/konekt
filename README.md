@@ -1,6 +1,6 @@
 # Konekt
 
-A customisable link-in-bio landing page builder with real-time analytics, built for Nigerian content creators. See `../linkinbio-prd.md` for the full product spec.
+A customisable link-in-bio page builder with real-time analytics — built for Nigerian creators. Pay in Naira, loads fast on 3G, custom domain support.
 
 ## Stack
 
@@ -9,117 +9,109 @@ A customisable link-in-bio landing page builder with real-time analytics, built 
 | Frontend + API | Next.js 16 (App Router, Turbopack) |
 | UI | Tailwind CSS 4 + shadcn/ui (new-york) |
 | Database + Auth | Supabase Postgres + Supabase Auth |
-| Payments | Paystack (NGN, card/bank transfer/USSD) |
-| Analytics | Supabase `link_click_events` table (swap for ClickHouse later) |
+| Payments | Paystack (NGN — card / bank transfer / USSD) |
+| Analytics | Supabase `link_click_events` table |
 | Media | Cloudflare R2 + Cloudflare CDN |
 | Transactional email | Resend |
 | Hosting | Vercel |
+
+## Features
+
+- **Bio page** — avatar, display name, bio, and custom theme colour
+- **Link manager** — add, reorder, toggle, and delete links; free plan limit enforced
+- **Scheduling** — set a start / expiry date on any link (Pro)
+- **Analytics** — per-link clicks, page views, top referrers, device breakdown
+- **Custom domain** — CNAME your own domain to your Konekt page (Pro)
+- **Billing** — Paystack monthly / annual plans with webhook-driven upgrades
+- **Public profile** — `/[username]` with favicon-per-link, click tracking, and theme support
 
 ## Project layout
 
 ```
 app/
-  (auth)/                 → login, signup (route group)
-  (dashboard)/
-    _components/          → dashboard-only client components
-    dashboard/
-      links/              → link manager
-      analytics/          → stats + per-link breakdown
-      appearance/         → profile + theme editor
-      billing/            → Paystack plans
-      domain/             → custom domain setup
-      settings/           → account settings
+  (auth)/                 → login, signup
+  (dashboard)/dashboard/
+    links/                → link manager (CRUD + reordering)
+    analytics/            → stats + per-link breakdown
+    appearance/           → profile + theme editor
+    billing/              → Paystack plans
+    domain/               → custom domain setup
+    settings/             → account settings
   [username]/             → public link-in-bio page
-    tracked-link.tsx      → click beacon
-    track-page-view.tsx   → pageview beacon
   api/
     track/click/          → click event ingest
     track/view/           → pageview ingest
+    billing/checkout/     → Paystack checkout session
     webhooks/paystack/    → Paystack billing webhook
-  auth/callback/          → Supabase email/OAuth callback
+  auth/callback/          → Supabase OAuth / magic-link callback
+components/
+  ui/                     → shadcn primitives + KonektMark SVG
+  layout/                 → SiteHeader (fixed nav + mobile menu)
 lib/
-  supabase/               → browser, server, proxy helpers, require-user
-  paystack.ts             → Paystack REST client + plans
-  analytics.ts            → UA/referrer parsing + recordEvent stub
-  resend.ts               → receipt + failed-payment emails
-  validations.ts          → zod schemas for forms
+  supabase/               → browser, server, require-user helpers
+  paystack.ts             → Paystack REST client + plan config
+  analytics.ts            → UA/referrer parsing + event recording
+  resend.ts               → transactional email helpers
+  validations.ts          → Zod schemas
   constants.ts            → plan limits, app metadata
-components/ui/            → shadcn primitives (button, card, dialog, …)
 supabase/migrations/      → SQL schema + RLS policies
-proxy.ts                  → Next 16 proxy (session refresh + auth redirect)
+__tests__/                → Vitest unit tests (241 tests)
 ```
 
-## First-time setup
-
-Run these from the project root:
+## Getting started
 
 ```bash
-# 1. Copy the env template and fill it in
-cp .env.example .env.local
+# 1. Clone and install
+git clone https://github.com/TheGloryAyeku/konekt.git
+cd konekt
+npm install
 
-# 2. Install deps (if you haven't already)
-pnpm install
+# 2. Set up environment variables
+cp .env.example .env.local
+# Fill in the values — see service notes below
 
 # 3. Start the dev server
-pnpm dev
+npm run dev
 ```
 
 ### Required services
 
-1. **Supabase** — create a project at https://supabase.com, then:
-   - Paste `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` into `.env.local`.
-   - Apply the initial schema: paste `supabase/migrations/0001_initial_schema.sql` into the SQL editor, or run `supabase db push` with the CLI.
-   - Enable Email auth (Dashboard → Authentication → Providers).
-   - Generate typed DB types when ready: `supabase gen types typescript --project-id <id> > lib/supabase/types.ts`.
+**Supabase** — [supabase.com](https://supabase.com)
+- Create a project and copy `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` from Project Settings → API.
+- Apply the schema: paste `supabase/migrations/0001_initial_schema.sql` into the SQL editor, or run `supabase db push`.
+- Enable Email auth: Authentication → Providers → Email.
 
-2. **Paystack** — https://paystack.com
-   - Use test keys while developing. Add `PAYSTACK_SECRET_KEY` to `.env.local`.
-   - Point the webhook at `https://<your-domain>/api/webhooks/paystack`.
+**Paystack** — [paystack.com](https://paystack.com)
+- Use test keys while developing. Add `PAYSTACK_SECRET_KEY` to `.env.local`.
+- Point the webhook at `https://<your-domain>/api/webhooks/paystack`.
 
-3. **Resend** — https://resend.com
-   - Add `RESEND_API_KEY` and verify your sending domain.
+**Resend** — [resend.com](https://resend.com)
+- Add `RESEND_API_KEY` and verify your sending domain.
 
-4. **Cloudflare R2** — https://dash.cloudflare.com
-   - Create an R2 bucket + API token, fill in the `CLOUDFLARE_*` vars.
-   - Used for avatar/thumbnail uploads and (later) programmatic custom domains.
+**Cloudflare R2** — [dash.cloudflare.com](https://dash.cloudflare.com)
+- Create an R2 bucket and API token, fill in the `CLOUDFLARE_*` vars.
 
-5. **ClickHouse** *(optional)* — the PRD calls for a ClickHouse cluster for analytics throughput, but v1 lands on Supabase. Wire up `lib/analytics.ts` → `recordEvent` when you're ready.
+### Running tests
+
+```bash
+npm test                  # run all tests
+npm run test:coverage     # with coverage report
+```
 
 ### Deploying to Vercel
 
 ```bash
-# Link this repo to a Vercel project
 vercel link
-
-# Add env vars from .env.local to Vercel (or set them in the dashboard)
-vercel env pull .env.local --yes      # refresh local values later
+vercel env pull .env.local --yes
+vercel deploy --prod
 ```
 
-Because this app already lives at the repo root, you do not need to set a custom **Root Directory** in Vercel.
+No custom root directory needed — the app lives at the repo root.
 
 ## Auth model
 
-- `proxy.ts` runs on every non-asset request, refreshes Supabase session cookies, and soft-redirects unauthenticated users away from `/dashboard`. It is **not** the auth boundary.
-- `lib/supabase/require-user.ts` is the authoritative check. Every dashboard layout/page calls `requireUser()`, which reads the session from the server client and redirects to `/login` if missing.
-- The `/auth/callback` route exchanges Supabase magic-link / OAuth codes for a session.
+`proxy.ts` runs on every non-asset request, refreshes Supabase session cookies, and redirects unauthenticated users away from `/dashboard`. `lib/supabase/require-user.ts` is the authoritative server-side auth check called from every dashboard layout and page.
 
 ## Analytics model
 
-Click and pageview beacons are sent from the public page via `navigator.sendBeacon`. The API routes:
-
-1. Filter obvious bots via UA heuristics (pair with Vercel BotID in production).
-2. Parse the referrer into a platform (instagram / tiktok / x / …) and the UA into a device class.
-3. `after(...)` schedules the DB write so the beacon response is instant.
-4. Writes land in `link_click_events`. When you want real volume, swap `lib/analytics.ts → recordEvent` for a ClickHouse HTTP insert.
-
-## Known TODOs for v1
-
-- Link CRUD server actions (create, reorder, toggle, delete) and the drag-and-drop list UI.
-- Profile + theme form with Cloudflare R2 upload.
-- Paystack checkout flow (`/api/billing/checkout`) and plan gating.
-- Custom domain provisioning via Cloudflare API.
-- ClickHouse wiring + analytics charts.
-- Vercel BotID + rate limiting on beacon endpoints.
-- Email confirmation copy and branded templates in Resend.
-- Legal pages: `/privacy`, `/terms`.
-- Feature flags for the Definition-of-Done checklist in the PRD.
+Click and pageview beacons fire from the public page via `navigator.sendBeacon`. API routes filter bots, parse the referrer into a platform (instagram / tiktok / x / …) and UA into a device class, then write to `link_click_events` via `after()` so the beacon response is instant.
