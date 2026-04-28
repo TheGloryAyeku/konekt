@@ -57,7 +57,7 @@ export default async function PublicProfilePage({ params }: Props) {
     <main
       className="flex min-h-screen flex-col items-center px-4 py-12"
       style={{
-        backgroundColor: theme.background ?? "#f6f2d3",
+        backgroundColor: theme.background ?? "#fbfaf2",
         color: theme.foreground ?? "#16181c",
       }}
     >
