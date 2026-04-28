@@ -7,15 +7,17 @@ import {
   Clock,
   Globe2,
   Link2,
+  Mail,
   Palette,
   Play,
   ShoppingBag,
-  Sparkles,
   Wallet,
   Zap,
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SiteHeader } from "@/components/layout/site-header";
+import { KonektMark } from "@/components/ui/konekt-mark";
 import {
   APP_NAME,
   FREE_PLAN_LINK_LIMIT,
@@ -100,54 +102,16 @@ const proPlanPerks = [
 const trustStats = [
   { icon: Zap, label: "Loads in under 2s on 3G" },
   { icon: BarChart3, label: "Real time click analytics" },
+  { icon: Wallet, label: "Pay in Naira, no dollar card" },
 ];
 
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col overflow-x-hidden">
-      {/* Nav */}
-      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight text-foreground"
-          >
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Sparkles className="h-4 w-4" />
-            </span>
-            {APP_NAME}
-          </Link>
-          <nav className="flex items-center gap-1 sm:gap-2">
-            <Link
-              href="#features"
-              className="hidden rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              Features
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="hidden rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              How it works
-            </Link>
-            <Link
-              href="#pricing"
-              className="hidden rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
-            >
-              Log in
-            </Link>
-            <Link href="/signup" className={buttonVariants({ size: "sm" })}>
-              Get started
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
+
+      {/* Spacer to push content below the fixed nav (nav ≈ py-3 + h-9 button = ~60px) */}
+      <div className="h-[61px] shrink-0" />
 
       <main className="flex flex-1 flex-col">
         {/* Hero */}
@@ -155,8 +119,8 @@ export default function Home() {
           <div className="mx-auto grid w-full max-w-6xl items-center gap-16 px-6 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:py-28">
             {/* Hero text */}
             <div className="flex flex-col items-start gap-6 text-left">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground shadow-sm">
-                <span className="flex h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-sm font-medium text-foreground shadow-sm">
+                <span className="flex h-2 w-2 rounded-full bg-primary" />
                 Built for Nigerian creators
               </span>
               <h1 className="text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl lg:text-[68px]">
@@ -168,19 +132,13 @@ export default function Home() {
                 3G, with analytics that show how your audience really finds you.
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <Link
-                  href="/signup"
-                  className={buttonVariants({ size: "lg" })}
-                >
+                <Link href="/signup" className={buttonVariants({ size: "lg" })}>
                   Claim your handle
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight />
                 </Link>
                 <Link
                   href="#how-it-works"
-                  className={buttonVariants({
-                    size: "lg",
-                    variant: "outline",
-                  })}
+                  className={buttonVariants({ size: "lg", variant: "outline" })}
                 >
                   See how it works
                 </Link>
@@ -221,7 +179,7 @@ export default function Home() {
                       highlight
                     />
                     <MockLink
-                      icon={<Sparkles className="h-4 w-4" />}
+                      icon={<Mail className="h-4 w-4" />}
                       label="Newsletter, every Friday"
                     />
                     <MockLink
@@ -239,7 +197,7 @@ export default function Home() {
 
           {/* Trust strip */}
           <div className="border-y border-border bg-background">
-            <div className="mx-auto grid w-full max-w-6xl gap-4 px-6 py-5 sm:grid-cols-2">
+            <div className="mx-auto grid w-full max-w-6xl gap-4 px-6 py-5 sm:grid-cols-3">
               {trustStats.map((stat) => (
                 <div
                   key={stat.label}
@@ -318,23 +276,25 @@ export default function Home() {
                 From sign up to a shareable page in under two minutes.
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-3">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
               {steps.map((step, i) => (
-                <div
-                  key={step.number}
-                  className="relative flex flex-col gap-3 rounded-2xl border border-border bg-card p-6"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-mono font-semibold text-primary">
+                <>
+                  <div
+                    key={step.number}
+                    className="flex flex-1 flex-col gap-3 rounded-xl border border-border bg-card p-6"
+                  >
+                    <span className="font-mono text-sm font-semibold text-primary">
                       {step.number}
                     </span>
-                    {i < steps.length - 1 && (
-                      <ArrowRight className="hidden h-4 w-4 text-muted-foreground sm:block" />
-                    )}
+                    <h3 className="text-lg font-semibold">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground">{step.body}</p>
                   </div>
-                  <h3 className="text-lg font-semibold">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.body}</p>
-                </div>
+                  {i < steps.length - 1 && (
+                    <div className="flex items-center justify-center sm:py-6">
+                      <ArrowRight className="h-5 w-5 shrink-0 rotate-90 text-muted-foreground sm:rotate-0" />
+                    </div>
+                  )}
+                </>
               ))}
             </div>
           </div>
@@ -427,7 +387,10 @@ export default function Home() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/signup" className={buttonVariants({})}>
+                  <Link
+                    href="/signup?plan=pro_monthly"
+                    className={buttonVariants({})}
+                  >
                     Upgrade to Pro
                   </Link>
                 </CardContent>
@@ -448,13 +411,17 @@ export default function Home() {
                   Join Nigerian creators using {APP_NAME} to turn one bio link
                   into a hub for content, sales, and everything in between.
                 </p>
-                <Link
-                  href="/signup"
-                  className={buttonVariants({ size: "lg", variant: "secondary" })}
-                >
-                  Claim your handle for free
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                {/* Frame button — outer ring adds a premium "double border" effect */}
+                <div className="relative inline-flex">
+                  <div className="pointer-events-none absolute -inset-[3px] rounded-[14px] border-2 border-white/30" />
+                  <Link
+                    href="/signup"
+                    className={buttonVariants({ size: "lg", variant: "secondary" })}
+                  >
+                    Claim your handle for free
+                    <ArrowRight />
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -465,9 +432,7 @@ export default function Home() {
       <footer className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground">
           <span className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded bg-primary text-primary-foreground">
-              <Sparkles className="h-3 w-3" />
-            </span>
+            <KonektMark size={20} />
             © {new Date().getFullYear()} {APP_NAME}. Built in Nigeria.
           </span>
           <nav className="flex gap-5">
